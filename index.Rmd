@@ -1,7 +1,7 @@
 ---
 title: "index.Rmd"
 author: "Craig Cunningham"
-date: "2/15/2018"
+
 output: 
   html_document: 
     keep_md: yes
@@ -10,6 +10,7 @@ output:
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE, cache = TRUE)
 ```
+Last update: 2/24/2018
 
 # Executive Summary
 Using devices such as Jawbone Up, Nike FuelBand, and Fitbit it is now possible to collect a large amount of data about personal activity relatively inexpensively. These type of devices are part of the quantified self movement - a group of enthusiasts who take measurements about themselves regularly to improve their health, to find patterns in their behavior, or because they are tech geeks. One thing that people regularly do is quantify how much of a particular activity they do, but they rarely quantify how well they do it. 
