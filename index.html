@@ -120,7 +120,6 @@ $(document).ready(function () {
 
 <h1 class="title toc-ignore">index.Rmd</h1>
 <h4 class="author"><em>Craig Cunningham</em></h4>
-<h4 class="date"><em>2/15/2018</em></h4>
 
 </div>
 
@@ -167,7 +166,7 @@ if (!file.exists(&quot;data&quot;)) {dir.create(&quot;data&quot;)}
 ## download files
 download.file(source1, destfile = &quot;data/trainingRaw.csv&quot;)
 download.file(source2, destfile = &quot;data/testingRaw.csv&quot;)
-dateSourced &lt;- date()</code></pre>
+
 <p>Load data into R</p>
 <pre class="r"><code>## read source data into dataframes 
 trainingRaw &lt;- read.csv(&quot;data/trainingRaw.csv&quot;, na.strings= c(&quot;NA&quot;,&quot;&quot;,&quot; &quot;))
