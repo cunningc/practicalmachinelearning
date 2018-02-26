@@ -384,7 +384,7 @@ confusionMatrix(validation$classe,predGBM)</code></pre>
 </div>
 <div id="predictions" class="section level3">
 <h3>Predictions</h3>
-<p>A separate data set was then loaded into R and cleaned in the same manner as before. The model was then used to predict the classifications of the 20 results of this new data.</p>
+<p>The randomForest model (fitRF) was then applied to the original “pml-testing” source data set (processed as testingData above) to predict the classifications for the 20 results of this data.</p>
 <pre class="r"><code># predict the classes of the test set
 predTest &lt;- predict(fitRF, testingData)
 predTest</code></pre>

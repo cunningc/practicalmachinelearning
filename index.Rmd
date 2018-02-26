@@ -192,7 +192,7 @@ confusionMatrix(validation$classe,predGBM)
 Both the randomForest() and caret rf method models yielded respectyiberly 99.6% and 99.4% prediction accuracy vs. the boosting model's 96.3% accuracy, clearly either random forest model is a better candidate to predict new data.
 
 ### Predictions
-A separate data set was then loaded into R and cleaned in the same manner as before. The model was then used to predict the classifications of the 20 results of this new data.
+The randomForest model (fitRF) was then applied to the original "pml-testing" source data set (processed as testingData above) to predict the classifications for the 20 results of this data.
 
 ```{r}
 # predict the classes of the test set
