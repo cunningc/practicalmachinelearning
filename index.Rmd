@@ -1,5 +1,5 @@
 ---
-title: "index.Rmd"
+title: "Practical Machine Learning Project - HAR data analysis"
 author: "Craig Cunningham"
 
 output: 
