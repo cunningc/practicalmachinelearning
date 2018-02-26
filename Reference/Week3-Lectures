@@ -1,0 +1,271 @@
+Week 3 Lecture Notes
+
+using RPLOT instead of RATTLE
+install.packages("rpart.plot")
+rpart.plot(model$finalModel)
+
+Video Lecture Tree 
+
+Example: Iris petal widths/sepal width
+
+data(iris); library(ggplot2); library(caret)
+names(iris) ## (variabes we’re trying to predict)
+---> [1] “Sepal.Length” “Sepal.Width” “Petal.Length” “Petal.Width” “Species” ## We’re trying to predict the species
+table(iris$Species)
+
+##always separate the data into the training and test sets
+inTrain <- createDataPartition(y=iris$Species, p=0.7, list = FALSE) 
+training<-iris[inTrain,]
+testing<-iris[-inTrain,]
+dim(training); dim(testing)
+
+## plot Iris petal widths/sepal width
+qplot(Petal.Width,Sepal.Width,colour=Species,data=training)
+
+## Fit a model
+library(caret)
+modFit<-train(Species~.,method="rpart",data=training)
+> print(modFit$finalModel)
+n= 105 
+
+node), split, n, loss, yval, (yprob)
+      * denotes terminal node
+
+1) root 105 70 setosa (0.33333333 0.33333333 0.33333333)  
+  2) Petal.Length< 2.45 35  0 setosa (1.00000000 0.00000000 0.00000000) *
+  3) Petal.Length>=2.45 70 35 versicolor (0.00000000 0.50000000 0.50000000)  
+    6) Petal.Width< 1.75 39  5 versicolor (0.00000000 0.87179487 0.12820513) *
+    7) Petal.Width>=1.75 31  1 virginica (0.00000000 0.03225806 0.96774194) *
+    
+## plot the classification tree
+plot(modFit$finalModel, uiform=TRUE,main="Classification Tree")
+text(modFit$finalModel, use.n=TRUE, all=TRUE, cex=.8)
+
+## prettier plots with the rattle package NOTE: rattle package not working
+library(rattle)
+fancyRpartPlot(modFit$finalModel)
+## - note that rattle install not working
+
+## using alternative rpart.plot()
+install.packages("rpart.plot")
+library(rpart.plot)
+rpart.plot(modFit$finalModel)
+
+## predicting new values
+predict(modFit,netdata=testing)
+  [1] setosa     setosa     setosa     setosa     setosa     setosa     setosa     setosa     setosa     setosa     setosa    
+ [12] setosa     setosa     setosa     setosa     setosa     setosa     setosa     setosa     setosa     setosa     setosa    
+ [23] setosa     setosa     setosa     setosa     setosa     setosa     setosa     setosa     setosa     setosa     setosa    
+ [34] setosa     setosa     versicolor versicolor versicolor versicolor versicolor versicolor versicolor versicolor versicolor
+ [45] versicolor versicolor versicolor versicolor versicolor virginica  versicolor versicolor versicolor versicolor versicolor
+ [56] versicolor versicolor versicolor versicolor versicolor versicolor versicolor versicolor versicolor versicolor versicolor
+ [67] versicolor versicolor versicolor versicolor virginica  virginica  versicolor virginica  virginica  virginica  virginica 
+ [78] virginica  virginica  virginica  virginica  virginica  virginica  versicolor virginica  virginica  virginica  virginica 
+ [89] virginica  versicolor virginica  virginica  versicolor versicolor virginica  virginica  virginica  virginica  virginica 
+[100] virginica  virginica  virginica  virginica  virginica  virginica 
+Levels: setosa versicolor virginica
+## This writes out each species because it’s actually predicting a class for each variable
+
+================================
+Bagging Lecture
+--------------------
+Ozone data example
+install.packages("ElemStatLearn")
+library(ElemStatLearn); data(ozone,package="ElemStatLearn")
+ozone<-ozone[order(ozone$ozone),]
+head(ozone)
+    ozone radiation temperature wind
+17      1         8          59  9.7
+19      4        25          61  9.7
+14      6        78          57 18.4
+45      7        48          80 14.3
+106     7        49          69 10.3
+7       8        19          61 20.1
+
+I’m going to try to predict temperature as a function of ozone
+
+ll <- matrix(NA,nrow=10,ncol=155) ## set up a matrix ll
+## resample the dataset 10 times
+for(i in 1:10){  
+  ss<-sample(1:dim(ozone)[1],replace=T) ## each time with replacement with the entire dataset
+  ozone0 <- ozone[ss,]  ## subset by our random sample ss
+  ozone0 < ozone0[order(ozone0$ozone),]    ## reorder by the ozone variable
+  loess0<-loess(temperature~ozone,data=ozone0,span=0.2)  ## fit a loess curve relating temperature to the ozone var 
+  ll[i,] <- predict(loess0,newdata=data.frame(ozone=1:155))  ## predict every curve outcomer using ozone values 1:155
+}
+## PLOT the curves
+plot(ozone$ozone,ozone$temperature,pch=19,cex=0.5)
+For( in 1:10){
+  lines(1:155,ll[I,],col="grey",lwd=2)
+  lines(1:155,apply(ll,2,mean),col="red",lwd=2)
+}
+## the grey lines are the loess averages for each of the samples
+## the red line is the bagged loess curve average of the grey lines
+
+------------------------------
+Custom Bagging Example -- this code doesn't work..
+predictors = data.frame(ozone=ozone$ozone)
+temperature = ozone$temperature ## this will be the outcome variable
+treebag <- bag(predictors, B = 10,bagControl=bagControl(fit = ctreeBag$fit,
+       predict = ctreeBag$pred,
+       aggregate = ctreeBag$aggregate))
+
+## plot the results
+plot(ozone$ozone,temperature,col='lightgrey',pch=19)
+points(ozone$ozone,predict(treebag$fits[[1]]$fit,predictors),pch=19,col="red")
+points(ozone$ozone,predict(treebag,predictors),pch=19,col="blue")
+
+-----------------------
+
+Random Forest Notes
+
+-----Example code using data(iris)
+
+data(iris)
+library(ggplot2)
+## build training and test data sets
+inTrain <- createDataPartition(y=iris$Species, p=0.7, list=FALSE)
+training<-iris[inTrain,]
+testing<-iris(-inTrain,]
+
+library(caret)
+library(randomForest)
+modFit<-train(Species~.,data=training,method="rf",prox=TRUE)
+## use Species for the outcome and all other vars as predictors 
+## rf refers to random forest
+## prox=TRUE provides a little more information when building these models
+modFit
+##---results --
+Random Forest 
+
+105 samples
+  4 predictor
+  3 classes: 'setosa', 'versicolor', 'virginica' 
+
+No pre-processing
+Resampling: Bootstrapped (25 reps) 
+Summary of sample sizes: 105, 105, 105, 105, 105, 105, ... 
+Resampling results across tuning parameters:
+
+## mtry = the number of repeated trees it's going to build
+  mtry  Accuracy   Kappa    
+  2     0.9511811  0.9252580
+  3     0.9501302  0.9234816
+  4     0.9514098  0.9254189
+
+Accuracy was used to select the optimal model using the largest value.
+The final value used for the model was mtry = 4.
+
+----------------
+I can look at the output of a specific tree thusly:
+getTree(modFit$finalModel,k=2) ## requires library(randomForest)
+## here I'm calling for the 2nd tree out (k=2)
+
+Here is the output
+## each of the rows refers to a particular split
+   left daughter right daughter split var split point status prediction
+1              2              3         3        2.80      1          0
+2              0              0         0        0.00     -1          1
+3              4              5         4        1.65      1          0
+4              6              7         3        5.00      1          0
+5              8              9         2        3.15      1          0
+6              0              0         0        0.00     -1          2
+7             10             11         2        2.75      1          0
+8              0              0         0        0.00     -1          3
+9             12             13         3        5.25      1          0
+10             0              0         0        0.00     -1          2
+11             0              0         0        0.00     -1          3
+12             0              0         0        0.00     -1          2
+13             0              0         0        0.00     -1          3
+## notes: 
+left daughter is left branch of tree and so on
+split var is the vasriable it's splitting on
+split point is the value where that variable is split
+status is
+prediction is what the prediction will be on that particular split
+
+---- Class "centers" (centers for predicted values)
+--code
+irisP <- classCenter(training[,c(3,4)], training$Species, modFit$finalModel$prox)
+irisP <- as.data.frame(irisP)  ## the centers dataset
+irisP$Species <- rownames(irisP) ## the Species dataset
+p <- qplot(Petal.Width, Petal.Length, col=Species,data=training)
+p + geom_point(aes(x=Petal.Width,y=Petal.Length,col=Species),size=5,shape=4,data=irisP)
+
+---- using the predict function ----
+Predict new values using the predict function
+pred <- predict(modFit,testing)
+testing$predRight <- pred==testing$Species  ## the prediction matches the actual data
+table(pred,testing$Species) ## create table of predictions vs actual data
+
+---Check via plotting to see what I missed..
+qplot(Petal.Width,Petal.Length,colour=predRight,data=testing,main="new data Predictions")
+## use this to see where your predictionis doing well or poorly
+
+----- Boosting in R
+Wage example
+--code--
+install.packages("ISLR")
+library(ISLR)
+data(Wage)
+library(ggplot2)
+library(caret)
+Wage <- subset(Wage,select=-c(logwage))
+inTrain <- createDataPartition(y=Wage$wage, p=0.7, list=FALSE)
+training <- Wage[inTrain,]
+testing <- Wage[-inTrain,]
+
+We can then fit the model using wage as the outcome and all other vars as predictors
+--code--
+install.packages("gbm")
+library(gbm)
+modFit <- train(wage~.,method="gbm",data=training,verbose=FALSE)
+## gbm method does boosting with trees
+## produces a lot of output if you don't use verbose=FALSE
+print(modFit)
+
+## look at the model against the testing dataset and plot
+qplot(predict(modFit,testing),wage,data=testing)
+
+-------------------------=
+Model based prediction Example: Iris Data
+==========================
+--code
+data(iris)
+library(ggplot)
+names(iris)
+[1] "Sepal.Length" "Sepal.Width"  "Petal.Length" "Petal.Width"  "Species"
+
+table(iris$Species)
+    setosa versicolor  virginica 
+        50         50         50 
+## create training and test data sets
+library(caret)
+inTrain<-createDataPartition(y=iris$Species,p=0.7,list=FALSE)
+ inTrain<-createDataPartition(y=iris$Species,p=0.7,list=FALSE)
+training<-iris[inTrain,]
+testing<-iris[-inTrain,]
+dim(training) ## [1] 105   5
+dim(testing) ## [1] 45  5
+
+## Build predictions (LDA Model linear discriminate analysis)
+modlda = train(Species~.,data=training,method="lda") ## lda model
+modnb = train(Species~.,data=training,method="nb") ## naive bayes
+plda = predict(modlda,testing)
+pnb = predict(modnb,testing)
+table(plda,pnb) ## make a table of the predictions
+## -- results
+            pnb
+plda         setosa versicolor virginica
+  setosa         15          0         0
+  versicolor      0         16         0
+  virginica       0          1        13
+# -- we can see the predictions agree except on one value
+
+## -- comparison of results
+equalPredictions = (plda==pnb)
+## create plot
+qplot(Petal.Width,Sepal.Width,color=equalPredictions,data=testing)
+## we see one value not classified in the same way as all the others (see chart)
+
+
